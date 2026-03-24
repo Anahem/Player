@@ -1,0 +1,67 @@
+<%- include('partials/head', { title: 'Search' }) %>
+
+<div class="container-narrow">
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-icon">◈</div>
+    <h1 class="hero-title">Steam Tool</h1>
+    <p class="hero-sub">Analyse profiles, explore libraries, discover unplayed games, and view playtime reports.</p>
+  </div>
+
+  <!-- Alerts -->
+  <% if (err) { %>
+  <div class="alert alert-danger"><%= err %></div>
+  <% } %>
+  <% if (msg) { %>
+  <div class="alert alert-success"><%= msg %></div>
+  <% } %>
+
+  <!-- Search form -->
+  <form method="POST" action="/search" class="search-form">
+    <input
+      type="text"
+      name="query"
+      class="search-input"
+      placeholder="SteamID64, vanity URL, or full profile URL…"
+      autofocus
+      autocomplete="off"
+    >
+    <button type="submit" class="btn btn-primary btn-lg">Look up →</button>
+  </form>
+
+  <p class="search-hint">
+    Examples: <code>76561198000000000</code> &nbsp;·&nbsp; <code>gaben</code> &nbsp;·&nbsp;
+    <code>steamcommunity.com/id/gaben</code>
+  </p>
+
+  <!-- Recent history -->
+  <% if (history && history.length > 0) { %>
+  <section class="history-section">
+    <div class="section-header">
+      <h2 class="section-title">Recent profiles</h2>
+      <form method="POST" action="/history/clear" style="display:inline">
+        <button class="btn btn-ghost btn-xs">Clear all</button>
+      </form>
+    </div>
+
+    <div class="history-list">
+      <% history.forEach(function(h) { %>
+      <div class="history-item">
+        <a href="/profile/<%= h.steamid %>" class="history-link">
+          <img src="<%= h.avatar %>" alt="" class="history-avatar" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22/>'">
+          <span class="history-name"><%= h.personaname %></span>
+          <span class="history-id mono"><%= h.steamid %></span>
+        </a>
+        <form method="POST" action="/history/<%= h.steamid %>/remove" style="display:inline">
+          <button class="btn btn-ghost btn-xs history-remove" title="Remove">✕</button>
+        </form>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+</div>
+
+<%- include('partials/foot') %>

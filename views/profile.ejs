@@ -1,0 +1,165 @@
+<%- include('partials/head', { title: profile.personaname }) %>
+
+<div class="container">
+
+  <% if (msg) { %><div class="alert alert-success"><%= msg %></div><% } %>
+
+  <!-- Profile header -->
+  <div class="profile-header">
+    <div class="profile-avatar-wrap">
+      <img src="<%= profile.avatarfull || profile.avatarmedium %>" alt="" class="profile-avatar">
+      <span class="profile-status status-<%= profile.personastate %>">
+        <%= personaState(profile.personastate) %>
+        <% if (profile.gameextrainfo) { %> · <span class="profile-playing">Playing <%= profile.gameextrainfo %></span><% } %>
+      </span>
+    </div>
+
+    <div class="profile-info">
+      <div class="profile-name-row">
+        <h1 class="profile-name"><%= profile.personaname %></h1>
+        <% if (profile.loccountrycode) { %>
+        <span class="profile-country"><%= profile.loccountrycode %></span>
+        <% } %>
+      </div>
+
+      <div class="profile-meta">
+        <% if (profile.timecreated) { %>
+        <span class="meta-item">Member since <%= fmtDate(profile.timecreated) %></span>
+        <% } %>
+        <% if (profile.lastlogoff && profile.personastate === 0) { %>
+        <span class="meta-item">Last seen <%= fmtDate(profile.lastlogoff) %></span>
+        <% } %>
+        <span class="meta-item">
+          <a href="<%= profile.profileurl %>" target="_blank" rel="noopener" class="link-subtle">View on Steam ↗</a>
+        </span>
+      </div>
+
+      <div class="profile-id-row">
+        <span class="mono text-muted" style="font-size:0.8rem"><%= profile.steamid %></span>
+        <button class="btn btn-ghost btn-xs" id="copySteamId" data-steamid="<%= profile.steamid %>">Copy ID</button>
+      </div>
+    </div>
+  </div>
+
+  <% if (isPrivate) { %>
+  <div class="alert alert-warn">
+    This profile is <strong>private</strong>. Game library and playtime data are not available.
+    The player must set their profile to public for full analysis.
+  </div>
+  <% } else { %>
+
+  <!-- Quick stats -->
+  <div class="summary-bar">
+    <div class="summary-item">
+      <span class="summary-label">Games owned</span>
+      <span class="summary-value mono"><%= library && library.game_count ? library.game_count.toLocaleString() : '—' %></span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Total playtime</span>
+      <% const totalMins = (library && library.games) ? library.games.reduce((s,g)=>s+g.playtime_forever,0) : 0; %>
+      <span class="summary-value mono"><%= Math.floor(totalMins / 60).toLocaleString() %>h</span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Games played</span>
+      <% const playedCount = (library && library.games) ? library.games.filter(g=>g.playtime_forever>0).length : 0; %>
+      <span class="summary-value mono"><%= playedCount.toLocaleString() %></span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Unplayed</span>
+      <% const unplayedCount = (library && library.games) ? library.games.filter(g=>g.playtime_forever===0).length : 0; %>
+      <span class="summary-value mono"><%= unplayedCount.toLocaleString() %></span>
+    </div>
+    <% if (recent && recent.games && recent.games.length > 0) { %>
+    <div class="summary-item">
+      <span class="summary-label">Last 2 weeks</span>
+      <% const recentMins = recent.games.reduce((s,g)=>s+(g.playtime_2weeks||0),0); %>
+      <span class="summary-value mono"><%= fmtMinutes(recentMins) %></span>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Currently playing -->
+  <% if (profile.gameextrainfo && profile.gameid) { %>
+  <div class="now-playing">
+    <img src="<%= gameImg(profile.gameid) %>" alt="" class="now-playing-img" onerror="this.style.display='none'">
+    <div class="now-playing-info">
+      <span class="now-playing-label">Currently playing</span>
+      <span class="now-playing-name"><%= profile.gameextrainfo %></span>
+    </div>
+  </div>
+  <% } %>
+
+  <!-- Top games -->
+  <% if (topGames && topGames.length > 0) { %>
+  <section class="card-section">
+    <div class="section-header">
+      <h2 class="section-title">Most played</h2>
+      <a href="/profile/<%= steamid %>/library" class="link-subtle">View all →</a>
+    </div>
+
+    <% const maxPt = topGames[0].playtime_forever; %>
+    <div class="top-games">
+      <% topGames.forEach(function(g, i) { %>
+      <div class="top-game">
+        <span class="top-game-rank mono">#<%= i + 1 %></span>
+        <img src="<%= gameImg(g.appid) %>" alt="" class="top-game-img" onerror="this.style.display='none'">
+        <div class="top-game-info">
+          <span class="top-game-name"><%= g.name %></span>
+          <div class="playtime-bar-wrap">
+            <div class="playtime-bar" style="width:<%= maxPt > 0 ? Math.round((g.playtime_forever/maxPt)*100) : 0 %>%"></div>
+          </div>
+        </div>
+        <span class="top-game-time mono"><%= fmtMinutes(g.playtime_forever) %></span>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Recent activity -->
+  <% if (recent && recent.games && recent.games.length > 0) { %>
+  <section class="card-section">
+    <div class="section-header">
+      <h2 class="section-title">Recent activity <span class="text-muted" style="font-size:0.8rem;font-weight:400">(last 2 weeks)</span></h2>
+    </div>
+    <div class="recent-grid">
+      <% recent.games.forEach(function(g) { %>
+      <div class="recent-card">
+        <img src="<%= gameImg(g.appid) %>" alt="" class="recent-card-img" onerror="this.style.display='none'">
+        <div class="recent-card-info">
+          <span class="recent-card-name"><%= g.name %></span>
+          <div class="recent-card-times">
+            <span class="mono recent-recent"><%= fmtMinutes(g.playtime_2weeks || 0) %> this fortnight</span>
+            <span class="text-muted recent-total"><%= fmtMinutes(g.playtime_forever) %> total</span>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Quick links -->
+  <div class="quick-links">
+    <a href="/profile/<%= steamid %>/library" class="quick-link-card">
+      <span class="quick-link-icon">▤</span>
+      <span class="quick-link-label">Browse Library</span>
+      <span class="quick-link-sub">All owned games with playtime</span>
+    </a>
+    <a href="/profile/<%= steamid %>/suggestions" class="quick-link-card">
+      <span class="quick-link-icon">⚂</span>
+      <span class="quick-link-label">Game Suggestions</span>
+      <span class="quick-link-sub">Unplayed & barely-started picks</span>
+    </a>
+    <a href="/profile/<%= steamid %>/stats" class="quick-link-card">
+      <span class="quick-link-icon">◎</span>
+      <span class="quick-link-label">Stats & Reports</span>
+      <span class="quick-link-sub">Playtime breakdown & charts</span>
+    </a>
+  </div>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/foot') %>

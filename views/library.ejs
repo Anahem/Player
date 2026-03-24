@@ -1,0 +1,69 @@
+<%- include('partials/head', { title: profile.personaname + ' — Library' }) %>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Library</h1>
+      <p class="page-sub"><%= profile.personaname %> &nbsp;·&nbsp; <span id="gameCount" class="mono"><%= games.length %></span> games</p>
+    </div>
+  </div>
+
+  <% if (isPrivate) { %>
+  <div class="alert alert-warn">This profile is private — library data is unavailable.</div>
+  <% } else if (games.length === 0) { %>
+  <div class="empty-state">No games found in this library.</div>
+  <% } else { %>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <input type="text" id="librarySearch" class="filter-input" placeholder="Search games…" autocomplete="off">
+    <select id="librarySort" class="filter-select">
+      <option value="playtime_desc">Most played first</option>
+      <option value="playtime_asc">Least played first</option>
+      <option value="name_asc">Name A – Z</option>
+      <option value="name_desc">Name Z – A</option>
+    </select>
+    <select id="libraryFilter" class="filter-select">
+      <option value="all">All games</option>
+      <option value="played">Played only</option>
+      <option value="unplayed">Unplayed only</option>
+      <option value="barely">Barely played (&lt;1h)</option>
+    </select>
+  </div>
+
+  <!-- Game grid -->
+  <div class="game-grid" id="gameGrid">
+    <% games.sort((a,b) => b.playtime_forever - a.playtime_forever).forEach(function(g) { %>
+    <div class="game-card"
+         data-name="<%= g.name.toLowerCase().replace(/"/g,'') %>"
+         data-playtime="<%= g.playtime_forever %>">
+      <div class="game-card-img-wrap">
+        <img
+          src="<%= gameImg(g.appid) %>"
+          alt=""
+          class="game-card-img"
+          loading="lazy"
+          onerror="this.parentElement.classList.add('game-card-no-img')"
+        >
+        <div class="game-card-no-art"><%= g.name %></div>
+      </div>
+      <div class="game-card-body">
+        <span class="game-card-name" title="<%= g.name %>"><%= g.name %></span>
+        <% if (g.playtime_forever === 0) { %>
+        <span class="game-card-time text-muted">Never played</span>
+        <% } else { %>
+        <span class="game-card-time mono"><%= fmtMinutes(g.playtime_forever) %></span>
+        <% } %>
+      </div>
+    </div>
+    <% }) %>
+  </div>
+
+  <p class="list-footer text-muted" id="noResults" style="display:none">No games match your search.</p>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/foot') %>

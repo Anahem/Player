@@ -1,0 +1,14 @@
+<%- include('partials/head', { title: 'Error' }) %>
+
+<div class="container-narrow">
+  <div class="error-box">
+    <span class="error-icon">⚠</span>
+    <h1 class="error-title"><%= message || 'Something went wrong' %></h1>
+    <% if (typeof detail !== 'undefined' && detail) { %>
+    <p class="error-detail mono"><%= detail %></p>
+    <% } %>
+    <a href="/" class="btn btn-primary">← Back to Search</a>
+  </div>
+</div>
+
+<%- include('partials/foot') %>

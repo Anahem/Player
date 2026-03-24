@@ -1,0 +1,130 @@
+<%- include('partials/head', { title: profile.personaname + ' — Suggestions' }) %>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Game Suggestions</h1>
+      <p class="page-sub"><%= profile.personaname %> &nbsp;·&nbsp; <%= counts.total %> games in library</p>
+    </div>
+    <a href="?<%= Date.now() %>" class="btn btn-ghost">⚂ Shuffle</a>
+  </div>
+
+  <% if (isPrivate) { %>
+  <div class="alert alert-warn">This profile is private — library data is unavailable.</div>
+  <% } else if (counts.total === 0) { %>
+  <div class="empty-state">No games found in this library.</div>
+  <% } else { %>
+
+  <!-- Suggestion summary -->
+  <div class="summary-bar">
+    <div class="summary-item">
+      <span class="summary-label">Never played</span>
+      <span class="summary-value mono"><%= counts.unplayed.toLocaleString() %></span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Barely started</span>
+      <span class="summary-value mono"><%= counts.barelyPlayed.toLocaleString() %></span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">In progress</span>
+      <span class="summary-value mono"><%= counts.inProgress.toLocaleString() %></span>
+    </div>
+    <div class="summary-item">
+      <span class="summary-label">Backlog total</span>
+      <span class="summary-value mono"><%= (counts.unplayed + counts.barelyPlayed).toLocaleString() %></span>
+    </div>
+  </div>
+
+  <!-- Unplayed -->
+  <% if (unplayed.length > 0) { %>
+  <section class="suggestion-section">
+    <div class="section-header">
+      <h2 class="section-title">Never played <span class="badge-count"><%= counts.unplayed %></span></h2>
+      <span class="text-muted" style="font-size:0.85rem">Owned but never launched</span>
+    </div>
+    <div class="suggestion-grid">
+      <% unplayed.forEach(function(g) { %>
+      <div class="suggestion-card">
+        <div class="suggestion-img-wrap">
+          <img src="<%= gameImg(g.appid) %>" alt="" class="suggestion-img" loading="lazy" onerror="this.parentElement.classList.add('suggestion-no-img')">
+          <div class="suggestion-no-art"><%= g.name %></div>
+        </div>
+        <div class="suggestion-body">
+          <span class="suggestion-name" title="<%= g.name %>"><%= g.name %></span>
+          <span class="suggestion-tag tag-unplayed">Never played</span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% if (counts.unplayed > 12) { %>
+    <p class="list-footer text-muted">Showing 12 of <%= counts.unplayed %> — shuffle for more</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <!-- Barely played -->
+  <% if (barelyPlayed.length > 0) { %>
+  <section class="suggestion-section">
+    <div class="section-header">
+      <h2 class="section-title">Barely started <span class="badge-count"><%= counts.barelyPlayed %></span></h2>
+      <span class="text-muted" style="font-size:0.85rem">Less than 1 hour played</span>
+    </div>
+    <div class="suggestion-grid">
+      <% barelyPlayed.forEach(function(g) { %>
+      <div class="suggestion-card">
+        <div class="suggestion-img-wrap">
+          <img src="<%= gameImg(g.appid) %>" alt="" class="suggestion-img" loading="lazy" onerror="this.parentElement.classList.add('suggestion-no-img')">
+          <div class="suggestion-no-art"><%= g.name %></div>
+        </div>
+        <div class="suggestion-body">
+          <span class="suggestion-name" title="<%= g.name %>"><%= g.name %></span>
+          <span class="suggestion-tag tag-barely mono"><%= fmtMinutes(g.playtime_forever) %> played</span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% if (counts.barelyPlayed > 12) { %>
+    <p class="list-footer text-muted">Showing 12 of <%= counts.barelyPlayed %> — shuffle for more</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <!-- In progress -->
+  <% if (inProgress.length > 0) { %>
+  <section class="suggestion-section">
+    <div class="section-header">
+      <h2 class="section-title">In progress <span class="badge-count"><%= counts.inProgress %></span></h2>
+      <span class="text-muted" style="font-size:0.85rem">1 – 10 hours played — worth revisiting</span>
+    </div>
+    <div class="suggestion-grid">
+      <% inProgress.forEach(function(g) { %>
+      <div class="suggestion-card">
+        <div class="suggestion-img-wrap">
+          <img src="<%= gameImg(g.appid) %>" alt="" class="suggestion-img" loading="lazy" onerror="this.parentElement.classList.add('suggestion-no-img')">
+          <div class="suggestion-no-art"><%= g.name %></div>
+        </div>
+        <div class="suggestion-body">
+          <span class="suggestion-name" title="<%= g.name %>"><%= g.name %></span>
+          <span class="suggestion-tag tag-progress mono"><%= fmtMinutes(g.playtime_forever) %> played</span>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+    <% if (counts.inProgress > 12) { %>
+    <p class="list-footer text-muted">Showing 12 of <%= counts.inProgress %> — shuffle for more</p>
+    <% } %>
+  </section>
+  <% } %>
+
+  <% if (unplayed.length === 0 && barelyPlayed.length === 0 && inProgress.length === 0) { %>
+  <div class="empty-state">
+    <p>Impressive — no obvious suggestions. This library is well-played.</p>
+  </div>
+  <% } %>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/foot') %>

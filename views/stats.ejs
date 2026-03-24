@@ -1,0 +1,121 @@
+<%- include('partials/head', { title: profile.personaname + ' — Stats' }) %>
+
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Stats & Reports</h1>
+      <p class="page-sub"><%= profile.personaname %></p>
+    </div>
+  </div>
+
+  <% if (isPrivate) { %>
+  <div class="alert alert-warn">This profile is private — stats are unavailable.</div>
+  <% } else if (stats.totalGames === 0) { %>
+  <div class="empty-state">No game data found.</div>
+  <% } else { %>
+
+  <!-- Key metrics -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <span class="stat-card-label">Total playtime</span>
+      <span class="stat-card-value mono"><%= stats.totalHours.toLocaleString() %>h</span>
+      <span class="stat-card-sub"><%= fmtMinutes(stats.totalMinutes) %></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-label">Games owned</span>
+      <span class="stat-card-value mono"><%= stats.totalGames.toLocaleString() %></span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-label">Games played</span>
+      <span class="stat-card-value mono"><%= stats.playedCount.toLocaleString() %></span>
+      <span class="stat-card-sub"><%= stats.totalGames > 0 ? Math.round(stats.playedCount / stats.totalGames * 100) : 0 %>% of library</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-label">Unplayed</span>
+      <span class="stat-card-value mono"><%= stats.unplayedCount.toLocaleString() %></span>
+      <span class="stat-card-sub"><%= stats.totalGames > 0 ? Math.round(stats.unplayedCount / stats.totalGames * 100) : 0 %>% of library</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-card-label">Avg per game played</span>
+      <span class="stat-card-value mono"><%= stats.avgHours %>h</span>
+      <span class="stat-card-sub"><%= fmtMinutes(stats.avgMinutes) %></span>
+    </div>
+    <% if (stats.recentMinutes > 0) { %>
+    <div class="stat-card stat-card--accent">
+      <span class="stat-card-label">Last 2 weeks</span>
+      <span class="stat-card-value mono"><%= stats.recentHours %>h</span>
+      <span class="stat-card-sub"><%= fmtMinutes(stats.recentMinutes) %></span>
+    </div>
+    <% } %>
+  </div>
+
+  <!-- Top 10 chart -->
+  <% if (top10.length > 0) { %>
+  <section class="card-section">
+    <div class="section-header">
+      <h2 class="section-title">Top 10 by playtime</h2>
+    </div>
+    <div class="chart-bars">
+      <% const maxPt = top10[0].playtime_forever; %>
+      <% top10.forEach(function(g, i) { %>
+      <div class="chart-row">
+        <span class="chart-rank mono">#<%= i + 1 %></span>
+        <span class="chart-name" title="<%= g.name %>"><%= g.name %></span>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar" style="width:<%= maxPt > 0 ? Math.round((g.playtime_forever / maxPt) * 100) : 0 %>%"></div>
+        </div>
+        <span class="chart-time mono"><%= fmtMinutes(g.playtime_forever) %></span>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- Distribution -->
+  <section class="card-section">
+    <div class="section-header">
+      <h2 class="section-title">Playtime distribution</h2>
+    </div>
+    <div class="chart-bars">
+      <% const maxBucket = Math.max(...buckets.map(b => b.count), 1); %>
+      <% buckets.forEach(function(b) { %>
+      <div class="chart-row">
+        <span class="chart-name chart-name--fixed"><%= b.label %></span>
+        <div class="chart-bar-wrap">
+          <div class="chart-bar chart-bar--muted" style="width:<%= Math.round((b.count / maxBucket) * 100) %>%"></div>
+        </div>
+        <span class="chart-time mono"><%= b.count.toLocaleString() %> games</span>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+
+  <!-- Recent activity -->
+  <% if (recent.length > 0) { %>
+  <section class="card-section">
+    <div class="section-header">
+      <h2 class="section-title">Recent activity <span class="text-muted" style="font-size:0.8rem;font-weight:400">(last 2 weeks)</span></h2>
+    </div>
+    <div class="recent-grid">
+      <% recent.forEach(function(g) { %>
+      <div class="recent-card">
+        <img src="<%= gameImg(g.appid) %>" alt="" class="recent-card-img" onerror="this.style.display='none'">
+        <div class="recent-card-info">
+          <span class="recent-card-name"><%= g.name %></span>
+          <div class="recent-card-times">
+            <span class="mono recent-recent"><%= fmtMinutes(g.playtime_2weeks || 0) %> this fortnight</span>
+            <span class="text-muted recent-total"><%= fmtMinutes(g.playtime_forever) %> total</span>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+    </div>
+  </section>
+  <% } %>
+
+  <% } %>
+
+</div>
+
+<%- include('partials/foot') %>

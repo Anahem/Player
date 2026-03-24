@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — Steam Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <span class="nav-icon">◈</span>
+      <span class="nav-title">Steam Tool</span>
+    </a>
+
+    <% if (typeof steamid !== 'undefined' && steamid) { %>
+    <div class="nav-center">
+      <a href="/profile/<%= steamid %>" class="nav-tab<%= page === 'profile' ? ' active' : '' %>">Profile</a>
+      <a href="/profile/<%= steamid %>/library" class="nav-tab<%= page === 'library' ? ' active' : '' %>">Library</a>
+      <a href="/profile/<%= steamid %>/suggestions" class="nav-tab<%= page === 'suggestions' ? ' active' : '' %>">Suggestions</a>
+      <a href="/profile/<%= steamid %>/stats" class="nav-tab<%= page === 'stats' ? ' active' : '' %>">Stats</a>
+    </div>
+    <% } %>
+
+    <div class="nav-actions">
+      <% if (typeof steamid !== 'undefined' && steamid) { %>
+      <form method="POST" action="/profile/<%= steamid %>/refresh" style="display:inline">
+        <button class="btn btn-ghost btn-sm" title="Clear cached data and re-fetch from Steam">↻ Refresh</button>
+      </form>
+      <% } %>
+      <a href="/" class="btn btn-ghost btn-sm">Search</a>
+    </div>
+  </div>
+</nav>
+
+<main class="main">
